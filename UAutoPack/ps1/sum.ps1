@@ -12,6 +12,7 @@ function Sum1
 	return $result
 }
 
+$Msbuild15Path = 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin\amd64\msbuild.exe'
 
 function GetMsBuildPath([switch] $Use32BitMsBuild)
 {
@@ -59,8 +60,11 @@ function GetMsBuildPath([switch] $Use32BitMsBuild)
 }
 
 function BuildSln([string]$slns){
-   $msBuildPath=GetMsBuildPath(true)
-   ."$msBuildPath" $slns
+   $build=GetMsBuildPath -Use32BitMsBuild:$true
+   Write-Host "MsBuild Path: $build`n"
+   ##return $build
+   $result = ."$build" $slns /t:Rebuild /p:Configuration=Release;DeployOnBuild=true
+   return $result
 }	
 
 

@@ -36,7 +36,8 @@ namespace UAutoPack
 
         private static string script = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"/ps1/sum.ps1");
 
-        public static string sln = @"D:/work/WpfAutoPack/WpfAutoPack.sln";
+        //public static string sln = @"E:\workspace\vssWork\Source\EAS_ShoeERP\EAS_ShoeERP.sln";
+        public static string sln = @"F:\WorkDemo\WpfAutoPack\WpfAutoPack.sln";
 
         private static void CallPS1()
         {
@@ -71,13 +72,13 @@ namespace UAutoPack
                     Console.WriteLine(result.ToString());
                     MessageBox.Show(result.ToString());
                 }
-                
 
                 ps.AddCommand("BuildSln").AddParameters(new List<string>() { { sln } });
 
                 foreach (PSObject result in ps.Invoke())
                 {
-                    MessageBox.Show(result.ToString());
+                    Console.WriteLine(result.ToString());
+                    //MessageBox.Show(result.ToString());
                 }
 
             }
