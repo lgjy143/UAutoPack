@@ -63,7 +63,7 @@ function BuildSln([string]$slns){
    $build=GetMsBuildPath -Use32BitMsBuild:$true
    Write-Host "MsBuild Path: $build`n"
    ##return $build
-   $result = ."$build" $slns /t:Rebuild /p:Configuration=Release;DeployOnBuild=true
+   $result = ."$build" $slns /t:Rebuild /p:Configuration=Release;DeployOnBuild=true;DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder;AutoParameterizationWebConfigConnectionStrings=false;_PackageTempDir="F:/artifact"
    return $result
 }	
 
