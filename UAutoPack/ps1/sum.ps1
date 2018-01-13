@@ -95,7 +95,7 @@ function GetVisualStudioToolsVersion
 function BuildSln([string]$slns){
    $build=GetMsBuildPath -Use32BitMsBuild:$true
    $toolsVersion=GetVisualStudioToolsVersion
-   ##Write-Host "MsBuild Path: $build`n"
+   Write-Host "MsBuild Path: $build`n"
    ##/p:VisualStudioVersion=12.0
    $result = ."$build" $slns $toolsVersion /t:Rebuild /p:Configuration=Release /p:DeployOnBuild=true /p:DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder /p:AutoParameterizationWebConfigConnectionStrings=false /p:_PackageTempDir="C:\Users\U724\Desktop\dev\artifact"
    return $result

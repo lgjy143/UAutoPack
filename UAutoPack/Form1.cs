@@ -10,6 +10,7 @@ using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Text;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace UAutoPack
 {
@@ -38,9 +39,12 @@ namespace UAutoPack
 
         public static string sln = @"E:\workspace\vssWork\Source\EAS_ShoeERP\EAS_ShoeERP.sln";
         //public static string sln = @"F:\WorkDemo\WpfAutoPack\WpfAutoPack.sln";
+        public static string _PackageTempDir = @"C:\Users\U724\Desktop\dev\artifact";
 
         private static void CallPS1()
         {
+            GetVersion();
+            return;
             using (Runspace runspace = RunspaceFactory.CreateRunspace())
             {
                 runspace.Open();
@@ -61,8 +65,7 @@ namespace UAutoPack
 
                 foreach (PSObject result in ps.Invoke())
                 {
-                    Console.WriteLine("CallPS1()");
-                    Console.WriteLine(result);
+                    Console.WriteLine("CallPS1:" + result);
                     //MessageBox.Show(result.ToString());
                 }
                 ps.AddCommand("GetMsBuildPath").AddParameters(new List<bool>() { { true } });
@@ -74,14 +77,41 @@ namespace UAutoPack
                 }
 
                 ps.AddCommand("BuildSln").AddParameters(new List<string>() { { sln } });
-
+                Console.WriteLine("Start Build ...");
                 foreach (PSObject result in ps.Invoke())
                 {
                     Console.WriteLine(result.ToString());
                     //MessageBox.Show(result.ToString());
                 }
+                Console.WriteLine("Build to Completed");
+                DeleteConfigFile();
+                Console.WriteLine("DeleteConfigFile to Completed");
 
             }
+        }
+
+        private static void DeleteConfigFile()
+        {
+            var listFile = new List<string> { { "Web.Config" }, { "Log4Net.Config" } };
+            if (Directory.Exists(_PackageTempDir))
+            {
+                listFile.ForEach(item =>
+                {
+                    var filePath = _PackageTempDir + @"\" + item;
+                    if (File.Exists(filePath)) { File.Delete(filePath); }
+                });
+            }
+        }
+
+        private static string GetVersion()
+        {
+            var version = DateTime.Now.ToFileTime().ToString();
+
+            XElement xe = XElement.Load(_PackageTempDir + @"\Config\SystemConfig.config");
+            var s= from ele in xe.Elements("configuration")
+                                             select ele.Element("SystemConfiguration").Element("SoftVersion").Value;
+
+            return version;
         }
 
         private static Dictionary<string, string> dic = new Dictionary<string, string>
