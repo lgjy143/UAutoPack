@@ -59,11 +59,45 @@ function GetMsBuildPath([switch] $Use32BitMsBuild)
 	return $msBuildPath
 }
 
+function GetVisualStudioToolsVersion
+{
+    ## vs版本列表
+    $vsCommandPromptPaths = @(
+		@{Path=$Msbuild15Path;Version="15.0";}
+        @{Path=$env:VS140COMNTOOLS + 'VsDevCmd.bat';Version="14.0";}
+        @{Path=$env:VS120COMNTOOLS + 'VsDevCmd.bat';Version="12.0";}
+        @{Path=$env:VS110COMNTOOLS + 'VsDevCmd.bat';Version="11.0";}
+        @{Path=$env:VS100COMNTOOLS + 'vcvarsall.bat';Version="10.0";}
+    )
+
+	$vsToolsVersion = $null
+	foreach ($path in $vsCommandPromptPaths)
+	{
+		try
+		{
+			if (Test-Path -Path $path.Path)
+			{
+				##$vsToolsVersion ="/ToolsVersion:"+ $path.Version
+				$vsToolsVersion ="/p:VisualStudioVersion="+ $path.Version
+				break
+			}
+		}
+		catch 
+        { 
+            throw $_.Exception
+            exit 1
+        }
+	}
+    ## 返回 MsBuild ToolsVersion 参数
+	return $vsToolsVersion
+}
+
 function BuildSln([string]$slns){
    $build=GetMsBuildPath -Use32BitMsBuild:$true
-   Write-Host "MsBuild Path: $build`n"
-   ##return $build
-   $result = ."$build" $slns /t:Rebuild /p:Configuration=Release;DeployOnBuild=true;DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder;AutoParameterizationWebConfigConnectionStrings=false;_PackageTempDir="F:/artifact"
+   $toolsVersion=GetVisualStudioToolsVersion
+   ##Write-Host "MsBuild Path: $build`n"
+   ##/p:VisualStudioVersion=12.0
+   $result = ."$build" $slns $toolsVersion /t:Rebuild /p:Configuration=Release /p:DeployOnBuild=true /p:DeployTarget=PipelinePreDeployCopyAllFilesToOneFolder /p:AutoParameterizationWebConfigConnectionStrings=false /p:_PackageTempDir="C:\Users\U724\Desktop\dev\artifact"
    return $result
 }	
 

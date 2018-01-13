@@ -63,14 +63,14 @@ namespace UAutoPack
                 {
                     Console.WriteLine("CallPS1()");
                     Console.WriteLine(result);
-                    MessageBox.Show(result.ToString());
+                    //MessageBox.Show(result.ToString());
                 }
                 ps.AddCommand("GetMsBuildPath").AddParameters(new List<bool>() { { true } });
 
                 foreach (PSObject result in ps.Invoke())
                 {
                     Console.WriteLine(result.ToString());
-                    MessageBox.Show(result.ToString());
+                    //MessageBox.Show(result.ToString());
                 }
 
                 ps.AddCommand("BuildSln").AddParameters(new List<string>() { { sln } });
