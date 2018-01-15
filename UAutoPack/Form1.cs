@@ -5,10 +5,12 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -41,9 +43,23 @@ namespace UAutoPack
         //public static string sln = @"F:\WorkDemo\WpfAutoPack\WpfAutoPack.sln";
         public static string _PackageTempDir = @"C:\Users\U724\Desktop\dev\artifact";
 
-        private static void CallPS1()
+        private void CallPS1()
         {
-            GetVersion();
+            //Console.WriteLine(DateTime.Now.ToString("dddd"));//星期几
+
+            var version = GetVersion();
+            Console.WriteLine("version:" + version.ToString());
+            ConsoleOutPut("version:" + version.ToString());
+            ConsoleOutPut("version1:" + version.ToString());
+
+            return;
+
+            var outputZip = @"C:\Users\U724\Desktop\dev\" + version + ".zip";
+            CompressionPubilcZip(outputZip);
+            Console.WriteLine("CompressionPubilcZip Completed");
+
+
+
             return;
             using (Runspace runspace = RunspaceFactory.CreateRunspace())
             {
@@ -105,13 +121,48 @@ namespace UAutoPack
 
         private static string GetVersion()
         {
-            var version = DateTime.Now.ToFileTime().ToString();
+            var version = DateTime.Now.ToString("yyyymmddhhmmss");
 
-            XElement xe = XElement.Load(_PackageTempDir + @"\Config\SystemConfig.config");
-            var s= from ele in xe.Elements("configuration")
-                                             select ele.Element("SystemConfiguration").Element("SoftVersion").Value;
+            XElement doc = XElement.Load(_PackageTempDir + @"\Config\SystemConfig.config");
+            var _version = string.Empty;
+            try
+            {
+                var listVersion = from ele in doc.Descendants("SoftVersion")
+                                  select new
+                                  {
+                                      Version = ele.Value
+                                  };
 
+                if (listVersion != null)
+                {
+                    _version = listVersion.FirstOrDefault().Version;
+                }
+            }
+            catch (Exception) { }
+            if (!string.IsNullOrEmpty(_version))
+            {
+                version = "V" + _version;
+            }
             return version;
+        }
+
+        private static void CompressionPubilcZip(string outputZip)
+        {
+            if (File.Exists(outputZip)) { File.Delete(outputZip); }
+            ZipFile.CreateFromDirectory(_PackageTempDir, outputZip);
+        }
+
+        public delegate void TaskConsoleOutPut(string output);
+
+        public void ConsoleOutPut(string output)
+        {
+            //rtbInfo.BeginInvoke(new TaskConsoleOutPut(rtbInfo, DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine));
+
+            this.BeginInvoke(new TaskConsoleOutPut(ConsoleOutPut), new object[] { DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine });
+
+            //rtbInfo.AppendText(DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine);
+
+            //rtbInfo.Text += DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine;
         }
 
         private static Dictionary<string, string> dic = new Dictionary<string, string>
@@ -158,6 +209,11 @@ namespace UAutoPack
             if (value is string && type == typeof(Version)) return new Version(value as string);
             if (!(value is IConvertible)) return value;
             return Convert.ChangeType(value, type);
+        }
+
+        private void btnSln_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
