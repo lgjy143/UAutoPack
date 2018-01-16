@@ -72,6 +72,7 @@
             this.btnPackDic.TabIndex = 4;
             this.btnPackDic.Text = "输出目录";
             this.btnPackDic.UseVisualStyleBackColor = true;
+            this.btnPackDic.Click += new System.EventHandler(this.btnPackDic_Click);
             // 
             // txtPackDic
             // 
