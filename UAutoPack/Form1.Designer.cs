@@ -34,6 +34,7 @@
             this.btnPackDic = new System.Windows.Forms.Button();
             this.txtPackDic = new System.Windows.Forms.TextBox();
             this.rtbInfo = new System.Windows.Forms.RichTextBox();
+            this.bgWork = new System.ComponentModel.BackgroundWorker();
             this.SuspendLayout();
             // 
             // btnCreate
@@ -113,6 +114,7 @@
         private System.Windows.Forms.Button btnPackDic;
         private System.Windows.Forms.TextBox txtPackDic;
         private System.Windows.Forms.RichTextBox rtbInfo;
+        private System.ComponentModel.BackgroundWorker bgWork;
     }
 }
 

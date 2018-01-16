@@ -1,16 +1,16 @@
-﻿using System;
+﻿using SharpCompress.Archive;
+using SharpCompress.Archive.Zip;
+using SharpCompress.Common;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -25,8 +25,6 @@ namespace UAutoPack
 
         private void btnCreate_Click(object sender, EventArgs e)
         {
-            //MessageBox.Show(AppDomain.CurrentDomain.BaseDirectory);
-            //MessageBox.Show(script);
             CallPS1();
 
             //var val1 = DicValConvert<string>(dic, "1");
@@ -47,20 +45,24 @@ namespace UAutoPack
         {
             //Console.WriteLine(DateTime.Now.ToString("dddd"));//星期几
 
+            #region GetVersion
+
             var version = GetVersion();
             Console.WriteLine("version:" + version.ToString());
-            ConsoleOutPut("version:" + version.ToString());
-            ConsoleOutPut("version1:" + version.ToString());
 
-            return;
+            #endregion
+
+            var richText = new Utils.RichTextBoxUtils(this.rtbInfo);
+            richText.Write("version:" + version.ToString());
 
             var outputZip = @"C:\Users\U724\Desktop\dev\" + version + ".zip";
             CompressionPubilcZip(outputZip);
-            Console.WriteLine("CompressionPubilcZip Completed");
+            Console.WriteLine("发布文件打包完成.");
 
-
+            richText.Write("发布文件打包完成.");
 
             return;
+
             using (Runspace runspace = RunspaceFactory.CreateRunspace())
             {
                 runspace.Open();
@@ -149,20 +151,36 @@ namespace UAutoPack
         private static void CompressionPubilcZip(string outputZip)
         {
             if (File.Exists(outputZip)) { File.Delete(outputZip); }
-            ZipFile.CreateFromDirectory(_PackageTempDir, outputZip);
+
+            using (var archive = ZipArchive.Create())
+            {
+                archive.AddAllFromDirectory(_PackageTempDir);
+                archive.SaveTo(outputZip, CompressionType.Deflate);
+            }
         }
 
-        public delegate void TaskConsoleOutPut(string output);
+        public delegate void ConsoleOutPutDelegate(string output);
+
+        public void ConsoleOutPutLog(string output)
+        {
+            rtbInfo.AppendText(DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] : ") + output + Environment.NewLine);
+        }
 
         public void ConsoleOutPut(string output)
         {
             //rtbInfo.BeginInvoke(new TaskConsoleOutPut(rtbInfo, DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine));
 
-            this.BeginInvoke(new TaskConsoleOutPut(ConsoleOutPut), new object[] { DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine });
+            //this.BeginInvoke(new TaskConsoleOutPut(ConsoleOutPut), new object[] { DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine });
 
             //rtbInfo.AppendText(DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine);
 
             //rtbInfo.Text += DateTime.Now.ToLongDateString() + " : " + output + Environment.NewLine;
+
+            //var dlg = new ConsoleOutPutDelegate(ConsoleOutPutLog);
+            //rtbInfo.Invoke(dlg, output);
+
+            rtbInfo.Invoke(new ConsoleOutPutDelegate(ConsoleOutPutLog), output);
+
         }
 
         private static Dictionary<string, string> dic = new Dictionary<string, string>
@@ -213,7 +231,112 @@ namespace UAutoPack
 
         private void btnSln_Click(object sender, EventArgs e)
         {
+            ThreadExecute(this.bgWork, new DoWorkEventHandler(this.DoWork), new RunWorkerCompletedEventHandler(this.WorkComp));
+        }
+
+        public void SetText(string str)
+        {
+            rtbInfo.Invoke(new Action(() =>
+            {
+                rtbInfo.AppendText(str);
+                rtbInfo.ScrollToCaret();
+            }));
+        }
+
+        protected void DoWork(object sender, DoWorkEventArgs e)
+        {
+            var richText = new Utils.RichTextBoxUtils(this.rtbInfo);
+            richText.Write("1");
+            richText.Write("2");
+            //System.Threading.Thread.Sleep(1000);
+            richText.Write("1");
+            richText.Write("2");
+            //System.Threading.Thread.Sleep(1000);
+            richText.Write("11");
+            //System.Threading.Thread.Sleep(1000);
+            richText.Write("1");
+            richText.Write("2");
+            //System.Threading.Thread.Sleep(1000);
+
+            //SetText("123 ");
+            //SetText("123-1 ");
+            //System.Threading.Thread.Sleep(1000);
+
+            //SetText("123 ");
+            //SetText("123-1 ");
+            //System.Threading.Thread.Sleep(1000);
+
+            //SetText("123 ");
+            //SetText("123-1 ");
+            //System.Threading.Thread.Sleep(1000);
+
+            //SetText("123 ");
+            //SetText("123-1 ");
+            //System.Threading.Thread.Sleep(1000);
+            //SetText("123");
+
+            //LogMessage("绿色1");
+            //LogError("红色2");
+            //LogWarning("粉色3");
+            ////System.Threading.Thread.Sleep(1000);
+            //LogMessage("绿色4");
+            //LogError("红色5");
+            //LogWarning("粉色6");
+            ////System.Threading.Thread.Sleep(1000);
+            //LogMessage("绿色7");
+            //LogError("红色8");
+            //LogWarning("粉色9");
+            ////System.Threading.Thread.Sleep(1000);
 
         }
+
+        protected void WorkComp(object sender, RunWorkerCompletedEventArgs e)
+        {
+
+        }
+
+        public static void ThreadExecute(BackgroundWorker bgWorker, DoWorkEventHandler doWork, RunWorkerCompletedEventHandler doWorkComplete)
+        {
+            bgWorker = new BackgroundWorker();
+            bgWorker.WorkerSupportsCancellation = true;
+            bgWorker.DoWork += doWork;
+            bgWorker.RunWorkerCompleted += doWorkComplete;
+            if (!bgWorker.IsBusy)
+            {
+                bgWorker.RunWorkerAsync();
+            }
+        }
+
+
+        #region 日志记录、支持其他线程访问  
+
+        public delegate void LogAppendDelegate(Color color, string text);
+
+        public void LogAppendMethod(Color color, string text)
+        {
+            rtbInfo.AppendText("\n");
+            rtbInfo.SelectionColor = color;
+            rtbInfo.AppendText(text);
+            rtbInfo.ScrollToCaret();
+        }
+
+        public void LogError(string text)
+        {
+            LogAppendDelegate la = new LogAppendDelegate(LogAppendMethod);
+            rtbInfo.Invoke(la, Color.Red, DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + text);
+        }
+        public void LogWarning(string text)
+        {
+            LogAppendDelegate la = new LogAppendDelegate(LogAppendMethod);
+            rtbInfo.Invoke(la, Color.Violet, DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + text);
+        }
+        public void LogMessage(string text)
+        {
+            LogAppendDelegate la = new LogAppendDelegate(LogAppendMethod);
+            rtbInfo.Invoke(la, Color.Green, DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + text);
+        }
+
+        #endregion
+
     }
 }
