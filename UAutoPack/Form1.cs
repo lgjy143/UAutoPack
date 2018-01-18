@@ -70,13 +70,7 @@ namespace UAutoPack
             }
             packagePublic = packageTempDir + @"\artifact";
 
-
             var richText = new Utils.RichTextBoxUtils(this.rtbInfo);
-
-            richText.Write("1");
-            richText.Write("2");
-            richText.Write("3");
-            richText.Write("4");
 
             var scriptps1 = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"/ps1/sum.ps1");
 
