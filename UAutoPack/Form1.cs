@@ -48,95 +48,106 @@ namespace UAutoPack
 
         private void DoWorkCallPS1(object sender, DoWorkEventArgs e)
         {
-            sln = txtSln.Text;
-            if (string.IsNullOrEmpty(sln))
-            {
-                txtSln.Focus();
-                MessageBox.Show("解决方案为空!");
-                return;
-            }
-            if (!File.Exists(sln))
-            {
-                txtSln.Focus();
-                MessageBox.Show("解决方案不存在!");
-                return;
-            }
-            packageTempDir = txtPackDic.Text;
-            if (string.IsNullOrEmpty(packageTempDir))
-            {
-                txtPackDic.Focus();
-                MessageBox.Show("发布目录为空!");
-                return;
-            }
-            packagePublic = packageTempDir + @"\artifact";
-
             var richText = new Utils.RichTextBoxUtils(this.rtbInfo);
-
-            var scriptps1 = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"/ps1/sum.ps1");
-
-            using (Runspace runspace = RunspaceFactory.CreateRunspace())
+            try
             {
-                runspace.Open();
 
-                PowerShell ps = PowerShell.Create();
-                ps.Runspace = runspace;
-                ps.AddScript(scriptps1);
-                ps.Invoke();
 
-                ps.AddCommand("Sum").AddParameters(
-                    new Dictionary<string, int>()
-                    {
-                        {"first", 15},
-                        {"second", 14},
-                        {"three", 16}
-                    }
-                );
-
-                foreach (PSObject result in ps.Invoke())
+                sln = txtSln.Text;
+                if (string.IsNullOrEmpty(sln))
                 {
-                    Console.WriteLine("CallPS1:" + result);
+                    txtSln.Focus();
+                    MessageBox.Show("解决方案为空!");
+                    return;
                 }
-                ps.AddCommand("GetMsBuildPath").AddParameters(new List<bool>() { { true } });
-
-                foreach (PSObject result in ps.Invoke())
+                if (!File.Exists(sln))
                 {
-                    Console.WriteLine(result.ToString());
+                    txtSln.Focus();
+                    MessageBox.Show("解决方案不存在!");
+                    return;
                 }
-
-                ps.AddCommand("BuildSln").AddParameters(new Dictionary<string, string> {
-                    {"slns",sln },
-                    {"packagetempdir",packagePublic }
-                });
-                Console.WriteLine("开始构建解决方案 ...");
-                richText.Write("发布开始 ...");
-                foreach (PSObject result in ps.Invoke())
+                packageTempDir = txtPackDic.Text;
+                if (string.IsNullOrEmpty(packageTempDir))
                 {
-                    Console.WriteLine(result.ToString());
-                    //MessageBox.Show(result.ToString());
+                    txtPackDic.Focus();
+                    MessageBox.Show("发布目录为空!");
+                    return;
                 }
-                richText.Write("发布完成 ...");
-                Console.WriteLine("Build to Completed");
-                DeleteConfigFile();
-                richText.Write("配置文件删除完成");
-                Console.WriteLine("DeleteConfigFile to Completed");
+                packagePublic = packageTempDir + @"\artifact";
 
+
+
+                //var scriptps1 = File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + @"/ps1/sum.ps1");
+
+                //using (Runspace runspace = RunspaceFactory.CreateRunspace())
+                //{
+                //    runspace.Open();
+
+                //    PowerShell ps = PowerShell.Create();
+                //    ps.Runspace = runspace;
+                //    ps.AddScript(scriptps1);
+                //    ps.Invoke();
+
+                //    ps.AddCommand("Sum").AddParameters(
+                //        new Dictionary<string, int>()
+                //        {
+                //            {"first", 15},
+                //            {"second", 14},
+                //            {"three", 16}
+                //        }
+                //    );
+
+                //    foreach (PSObject result in ps.Invoke())
+                //    {
+                //        Console.WriteLine("CallPS1:" + result);
+                //    }
+                //    ps.AddCommand("GetMsBuildPath").AddParameters(new List<bool>() { { true } });
+
+                //    foreach (PSObject result in ps.Invoke())
+                //    {
+                //        Console.WriteLine(result.ToString());
+                //    }
+
+                //    ps.AddCommand("BuildSln").AddParameters(new Dictionary<string, string> {
+                //        {"slns",sln },
+                //        {"packagetempdir",packagePublic }
+                //    });
+                //    Console.WriteLine("开始构建解决方案 ...");
+                //    richText.Write("发布开始 ...");
+                //    foreach (PSObject result in ps.Invoke())
+                //    {
+                //        Console.WriteLine(result.ToString());
+                //        //MessageBox.Show(result.ToString());
+                //    }
+                //    richText.Write("发布完成 ...");
+                //    Console.WriteLine("Build to Completed");
+                //    DeleteConfigFile();
+                //    richText.Write("配置文件删除完成");
+                //    Console.WriteLine("DeleteConfigFile to Completed");
+                //}
+
+
+                //#region GetVersion
+
+                //var version = GetVersion();
+                //Console.WriteLine("version:" + version.ToString());
+                //richText.Write("version:" + version.ToString());
+
+                //#endregion
+
+                //var packageZip = packageTempDir + @"\" + version + ".zip";
+
+                //CompressionPubilcZip(packageZip);
+                //Console.WriteLine("发布文件打包完成.");
+                //richText.Write("发布文件打包完成.");
+
+                BakCode(sln, txtSlnBak.Text);
+                richText.Write("源码备份完成.");
             }
-
-
-            #region GetVersion
-
-            var version = GetVersion();
-            Console.WriteLine("version:" + version.ToString());
-            richText.Write("version:" + version.ToString());
-
-            #endregion
-
-            var packageZip = packageTempDir + @"\" + version + ".zip";
-
-            CompressionPubilcZip(packageZip);
-            Console.WriteLine("发布文件打包完成.");
-
-            richText.Write("发布文件打包完成.");
+            catch (Exception ex)
+            {
+                richText.Write("异常:." + ex.Message);
+            }
         }
 
         private static void DeleteConfigFile()
@@ -159,7 +170,7 @@ namespace UAutoPack
             try
             {
                 XElement doc = XElement.Load(packagePublic + @"\Config\SystemConfig.config");
-               
+
                 var listVersion = from ele in doc.Descendants("SoftVersion")
                                   select new
                                   {
@@ -181,14 +192,32 @@ namespace UAutoPack
 
         private static void CompressionPubilcZip(string outputZip)
         {
-            if (File.Exists(outputZip)) { File.Delete(outputZip); }
+            ZipTo(packagePublic, outputZip);
+        }
+
+        private static void ZipTo(string formDir, string toFile)
+        {
+            if (File.Exists(toFile)) { File.Delete(toFile); }
 
             using (var archive = ZipArchive.Create())
             {
-                archive.AddAllFromDirectory(packagePublic);
-                archive.SaveTo(outputZip, CompressionType.Deflate);
+                archive.AddAllFromDirectory(formDir);
+                archive.SaveTo(toFile, CompressionType.Deflate);
             }
         }
+
+        private static void BakCode(string sln, string bakDir)
+        {
+            if (!string.IsNullOrEmpty(bakDir))
+            {
+                var slnName = Path.GetFileNameWithoutExtension(sln);
+                var formBakDir = new FileInfo(sln).DirectoryName;
+                var toZipBak = bakDir + @"\" + slnName + DateTime.Now.ToString("yyyymmddhh") + ".zip";
+
+                ZipTo(formBakDir, toZipBak);
+            }
+        }
+
 
         public delegate void ConsoleOutPutDelegate(string output);
 
@@ -277,6 +306,15 @@ namespace UAutoPack
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
                 txtPackDic.Text = folderBrowserDialog.SelectedPath;
+            }
+        }
+
+        private void btnSlnBak_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                txtSlnBak.Text = folderBrowserDialog.SelectedPath;
             }
         }
 
@@ -381,6 +419,8 @@ namespace UAutoPack
             LogAppendDelegate la = new LogAppendDelegate(LogAppendMethod);
             rtbInfo.Invoke(la, Color.Green, DateTime.Now.ToString("[yyyy-MM-dd HH:mm:ss] ") + text);
         }
+
+
 
         #endregion
 

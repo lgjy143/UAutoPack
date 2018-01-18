@@ -35,11 +35,13 @@
             this.txtPackDic = new System.Windows.Forms.TextBox();
             this.rtbInfo = new System.Windows.Forms.RichTextBox();
             this.bgWork = new System.ComponentModel.BackgroundWorker();
+            this.btnSlnBak = new System.Windows.Forms.Button();
+            this.txtSlnBak = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btnCreate
             // 
-            this.btnCreate.Location = new System.Drawing.Point(410, 70);
+            this.btnCreate.Location = new System.Drawing.Point(410, 99);
             this.btnCreate.Name = "btnCreate";
             this.btnCreate.Size = new System.Drawing.Size(75, 23);
             this.btnCreate.TabIndex = 0;
@@ -83,17 +85,36 @@
             // 
             // rtbInfo
             // 
-            this.rtbInfo.Location = new System.Drawing.Point(12, 70);
+            this.rtbInfo.Location = new System.Drawing.Point(12, 101);
             this.rtbInfo.Name = "rtbInfo";
             this.rtbInfo.Size = new System.Drawing.Size(373, 92);
             this.rtbInfo.TabIndex = 6;
             this.rtbInfo.Text = "";
             // 
+            // btnSlnBak
+            // 
+            this.btnSlnBak.Location = new System.Drawing.Point(409, 73);
+            this.btnSlnBak.Name = "btnSlnBak";
+            this.btnSlnBak.Size = new System.Drawing.Size(75, 23);
+            this.btnSlnBak.TabIndex = 8;
+            this.btnSlnBak.Text = "备份目录";
+            this.btnSlnBak.UseVisualStyleBackColor = true;
+            this.btnSlnBak.Click += new System.EventHandler(this.btnSlnBak_Click);
+            // 
+            // txtSlnBak
+            // 
+            this.txtSlnBak.Location = new System.Drawing.Point(12, 73);
+            this.txtSlnBak.Name = "txtSlnBak";
+            this.txtSlnBak.Size = new System.Drawing.Size(373, 21);
+            this.txtSlnBak.TabIndex = 7;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(517, 174);
+            this.ClientSize = new System.Drawing.Size(517, 203);
+            this.Controls.Add(this.btnSlnBak);
+            this.Controls.Add(this.txtSlnBak);
             this.Controls.Add(this.rtbInfo);
             this.Controls.Add(this.btnPackDic);
             this.Controls.Add(this.txtPackDic);
@@ -116,6 +137,8 @@
         private System.Windows.Forms.TextBox txtPackDic;
         private System.Windows.Forms.RichTextBox rtbInfo;
         private System.ComponentModel.BackgroundWorker bgWork;
+        private System.Windows.Forms.Button btnSlnBak;
+        private System.Windows.Forms.TextBox txtSlnBak;
     }
 }
 
