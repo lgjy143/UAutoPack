@@ -155,11 +155,11 @@ namespace UAutoPack
         private static string GetVersion()
         {
             var version = DateTime.Now.ToString("yyyymmddhhmmss");
-
-            XElement doc = XElement.Load(packagePublic + @"\Config\SystemConfig.config");
             var _version = string.Empty;
             try
             {
+                XElement doc = XElement.Load(packagePublic + @"\Config\SystemConfig.config");
+               
                 var listVersion = from ele in doc.Descendants("SoftVersion")
                                   select new
                                   {
